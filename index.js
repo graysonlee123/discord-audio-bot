@@ -35,7 +35,13 @@ client.on('message', (message) => {
   if (!command) return;
 
   if (command.guildOnly && message.channel.type !== 'text') {
-    return message.reply("I can't execute that command inside DMs!111!!1!!!11");
+    return message.reply(
+      `Don't try to slide into my DM's. (I can't do that command in here.)`
+    );
+  }
+
+  if (command.voiceConnected && !message.member.voice.channel) {
+    return message.reply(`You must be connected to a voice channel!`);
   }
 
   if (command.args && !args.length) {

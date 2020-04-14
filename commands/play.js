@@ -3,6 +3,7 @@ module.exports = {
   aliases: ['sing'],
   description: 'Link a YouTube video to play.',
   guildOnly: true,
+  voiceConnected: true,
   async execute(message, args) {
     const ytdl = require('ytdl-core');
 
