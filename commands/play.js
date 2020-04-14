@@ -1,3 +1,5 @@
+const ytdl = require('ytdl-core');
+
 module.exports = {
   name: 'play',
   aliases: ['sing'],
@@ -5,14 +7,6 @@ module.exports = {
   guildOnly: true,
   voiceConnected: true,
   async execute(message, args) {
-    const ytdl = require('ytdl-core');
-
-    if (!message.member.voice.channel) {
-      return message.channel.send(
-        `You must be in a voice channel, ${message.author}!`
-      );
-    }
-
     const connection = await message.member.voice.channel.join();
     const search = args[0];
     const regex = RegExp('^(http||https)://.+');
@@ -20,8 +14,7 @@ module.exports = {
     if (regex.test(search)) {
       // Is a url
       try {
-        const videoData = await ytdl.getInfo(search);
-        console.log(videoData);
+        const verifyVideo = await ytdl.getBasicInfo(search);
 
         connection.play(ytdl(search), {
           quality: 'highestaudio',
