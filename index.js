@@ -7,8 +7,8 @@ client.commands = new Discord.Collection();
 
 const commandFiles = fs
   .readdirSync('./commands')
-  .filter(file => file.endsWith('.js'));
-  
+  .filter((file) => file.endsWith('.js'));
+
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   client.commands.set(command.name, command);
@@ -20,29 +20,32 @@ client.once('ready', () => {
   console.log('Ready and online!');
 });
 
-client.on('message', message => {
+client.on('message', (message) => {
   if (!message.content.startsWith(prefix) || message.author.bot) return;
 
   const args = message.content.slice(prefix.length).split(/ +/);
   const commandName = args.shift().toLowerCase();
 
-  const command = client.commands.get(commandName)
-    || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+  const command =
+    client.commands.get(commandName) ||
+    client.commands.find(
+      (cmd) => cmd.aliases && cmd.aliases.includes(commandName)
+    );
 
   if (!command) return;
 
   if (command.guildOnly && message.channel.type !== 'text') {
-    return message.reply('I can\'t execute that command inside DMs!111!!1!!!11')
+    return message.reply("I can't execute that command inside DMs!111!!1!!!11");
   }
 
   if (command.args && !args.length) {
     let reply = `You didn't provide any arguments, ${message.author}!`;
 
     if (command.usage) {
-      reply += `\nThe proper usage would be: \'${prefix}${command.name} ${command.usage}\'`
+      reply += `\nThe proper usage would be: \'${prefix}${command.name} ${command.usage}\'`;
     }
-    
-    return message.channel.send(reply)
+
+    return message.channel.send(reply);
   }
 
   if (!cooldowns.has(command.name)) {
@@ -58,7 +61,11 @@ client.on('message', message => {
 
     if (now < expirationTime) {
       const timeLeft = (expirationTime - now) / 1000;
-      return message.reply(`please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \'${command.name}\' command.`);
+      return message.reply(
+        `please wait ${timeLeft.toFixed(
+          1
+        )} more second(s) before reusing the \'${command.name}\' command.`
+      );
     }
   }
 
@@ -71,6 +78,10 @@ client.on('message', message => {
     console.error(error);
     message.reply('there was an error trying to execute that command!');
   }
+});
+
+process.on('unhandledRejection', (error) => {
+  console.error('Unhandled promise rejection:', error);
 });
 
 client.login(token);
