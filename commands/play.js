@@ -8,8 +8,9 @@ module.exports = {
   description: 'Link a YouTube video to play.',
   guildOnly: true,
   voiceConnected: true,
+  connection: null,
   async execute(message, args) {
-    const connection = await message.member.voice.channel.join();
+    this.connection = await message.member.voice.channel.join();
     const search = args.join(' ');
     const regex = RegExp('^(http||https)://.+');
     const options = {
@@ -21,31 +22,29 @@ module.exports = {
       try {
         await ytdl.getBasicInfo(search);
 
-        connection.play(ytdl(search), options);
+        // If no error is thrown, it will play the video
+        this.connection.play(ytdl(search), options);
       } catch (err) {
         return message.channel.send(
           `That video URL was not valid, ${message.author}! \nError: ${err.message}`
         );
       }
     } else {
-      // Search youtube
+      // Not a URL, query search youtube
       const baseurl = `https://www.googleapis.com/youtube/v3/search`;
-      const query = `?part=snippet&q=${search}&key=${youtubeApiKey}&maxResults=1`;
-
-      console.log(baseurl, query);
+      const query = `?part=snippet&q=${search}&key=${youtubeApiKey}&maxResults=1&type=video`;
 
       message.channel.send(`Searching youtube for "${search}"`);
+
       try {
         const res = await axios.get(`${baseurl}${query}`);
         const videoId = res.data.items[0].id.videoId;
+        const youtubeLink = `https://www.youtube.com/watch?v=${videoId}`;
 
         await ytdl.validateID(videoId);
 
-        const youtubeLink = `https://www.youtube.com/watch?v=${videoId}`;
-
-        message.channel.send(`This is what I found: ${youtubeLink}`);
-
-        connection.play(ytdl(youtubeLink), options);
+        message.channel.send(`This is what YouTube gave me: ${youtubeLink}`);
+        this.connection.play(ytdl(youtubeLink), options);
       } catch (err) {
         return message.channel.send(
           `There was an error with that YouTube search, ${message.author}. \nError: ${err.message}`
