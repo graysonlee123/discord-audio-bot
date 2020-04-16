@@ -14,35 +14,61 @@ exports.checkForServer = function (guildId) {
 };
 
 exports.addServer = function (guildId) {
-  console.log('Adding server: ', guildId);
+  // console.log('Adding server: ', guildId);
   servers[guildId] = { queue: [] };
-  console.log(servers);
 };
 
 exports.getServerObj = function (guildId) {
   return servers[guildId];
 };
 
-exports.parseArgs = function (args) {
+exports.parseArgsToUrl = async function (message, args) {
   const regex = RegExp('^(http||https)://.+');
-  let query = { type: null, string: null };
 
   if (regex.test(args[0])) {
-    query.type = 'link';
-    query.string = args[0];
+    // Is a link
+    return args[0];
   } else {
-    (query.type = 'search'), (query.string = args.join(' '));
-  }
+    const baseURL = `https://www.googleapis.com/youtube/v3/search?`;
+    const string = args.join(' ');
+    const params = [
+      `part=snippet`,
+      `q=${string}`,
+      `key=${youtubeApiKey}`,
+      `maxResults=1`,
+      `type=video`,
+    ];
 
-  return query;
+    message.channel.send(`Searching YouTube for "${string}"...`);
+
+    try {
+      const res = await axios.get(`${baseURL}${params.join('&')}`);
+      const videoId = res.data.items[0].id.videoId;
+
+      await ytdl.validateID(videoId);
+
+      const youtubeLink = `https://www.youtube.com/watch?v=${videoId}`;
+
+      message.channel.send(`This is what YouTube found:\n${youtubeLink}`);
+
+      return youtubeLink;
+    } catch (err) {
+      return message.channel.send(
+        `There was an error with that YouTube search, ${message.author}.\nError: ${err.message}`
+      );
+    }
+  }
 };
 
-exports.addToQueue = function (message, args) {
+exports.addToQueue = async function (message, args) {
   let server = servers[message.guild.id];
-  let query = exports.parseArgs(args);
+  let url = await exports.parseArgsToUrl(message, args);
 
-  server.queue.push(query);
-  console.log(`Added to queue. New queue: ${server.queue}`);
+  console.log(`Adding ${url} to queue...`);
+
+  server.queue.push(url);
+
+  console.log(`New queue:`, server.queue);
 };
 
 exports.getQueue = function (message) {
@@ -52,52 +78,21 @@ exports.getQueue = function (message) {
   else return server.queue;
 };
 
-exports.play = async function (connection, message) {
-  let server = exports.getServerObj(message.guild.id);
+exports.play = function (connection, message) {
+  const server = exports.getServerObj(message.guild.id);
   const options = {
     quality: 'highestaudio',
+    filter: 'audioonly',
   };
-  const { type, string } = server.queue[0];
-  let youtubeLink;
 
-  console.log(`Trying to play this queue:`, server.queue);
+  console.log(`Attempting to play from queue...`, server.queue);
 
-  switch (type) {
-    case 'search':
-    default:
-      const baseURL = `https://www.googleapis.com/youtube/v3/search?`;
-      const params = [
-        `part=snippet`,
-        `q=${string}`,
-        `key=${youtubeApiKey}`,
-        `maxResults=1`,
-        `type=video`,
-      ];
-
-      message.channel.send(`Searching YouTube for "${string}"...`);
-
-      try {
-        const res = await axios.get(`${baseURL}${params.join('&')}`);
-        const videoId = res.data.items[0].id.videoId;
-        youtubeLink = `https://www.youtube.com/watch?v=${videoId}`;
-
-        await ytdl.validateID(videoId);
-        message.channel.send(`This is what YouTube found:\n${youtubeLink}`);
-      } catch (err) {
-        return message.channel.send(
-          `There was an error with that YouTube search, ${message.author}.\nError: ${err.message}`
-        );
-      }
-      break;
-    case 'link':
-      youtubeLink = string;
-      break;
-  }
-
-  server.dispatcher = connection.play(ytdl(youtubeLink), options);
+  server.dispatcher = connection.play(ytdl(server.queue[0]), options);
   server.queue.shift();
   server.dispatcher.on('end', function () {
     if (server.queue[0]) exports.play(connection, message);
-    else connection.disconnect();
+    else {
+      connection.disconnect();
+    }
   });
 };

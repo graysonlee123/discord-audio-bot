@@ -1,6 +1,3 @@
-const ytdl = require('ytdl-core');
-const axios = require('axios');
-const { youtubeApiKey } = require('../config.json');
 const { checkForServer, addServer, addToQueue, play } = require('../functions');
 
 module.exports = {
@@ -15,8 +12,14 @@ module.exports = {
       addServer(message.guild.id);
     }
 
-    const connection = await message.member.voice.channel.join();
-    addToQueue(message, args);
-    play(connection, message);
+    console.log(message.guild.voice);
+
+    // TODO: Need to check if already in a channel
+
+    await addToQueue(message, args);
+    if (!message.guild.voice) {
+      const connection = await message.member.voice.channel.join();
+      play(connection, message);
+    }
   },
 };

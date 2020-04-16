@@ -7,9 +7,11 @@ module.exports = {
   execute(message, args) {
     let queue = getQueue(message);
 
-    if (!queue) {
+    if (!queue || queue.length < 1) {
       return message.channel.send(`There seems to be nothing in the queue!`);
     }
+
+    console.log(queue);
 
     const embedQueue = queue.map(({ string }, i) => ({
       name: i + 1,
