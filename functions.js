@@ -1,3 +1,7 @@
+const ytdl = require('ytdl-core');
+const axios = require('axios');
+const { youtubeApiKey } = require('./config.json');
+
 // Server Logic for Queues
 const servers = {};
 
@@ -48,65 +52,52 @@ exports.getQueue = function (message) {
   else return server.queue;
 };
 
-exports.play = async function (connection, message, query) {
-  let server = getServerObj(message.guild.id);
+exports.play = async function (connection, message) {
+  let server = exports.getServerObj(message.guild.id);
   const options = {
     quality: 'highestaudio',
   };
+  const { type, string } = server.queue[0];
+  let youtubeLink;
 
-  server.queue.push(args[1]);
+  console.log(`Trying to play this queue:`, server.queue);
 
-  console.log('Queue: ', server);
+  switch (type) {
+    case 'search':
+    default:
+      const baseURL = `https://www.googleapis.com/youtube/v3/search?`;
+      const params = [
+        `part=snippet`,
+        `q=${string}`,
+        `key=${youtubeApiKey}`,
+        `maxResults=1`,
+        `type=video`,
+      ];
 
-  server.dispatcher = connection.play(ytdl(server.queue[0]), options);
+      message.channel.send(`Searching YouTube for "${string}"...`);
+
+      try {
+        const res = await axios.get(`${baseURL}${params.join('&')}`);
+        const videoId = res.data.items[0].id.videoId;
+        youtubeLink = `https://www.youtube.com/watch?v=${videoId}`;
+
+        await ytdl.validateID(videoId);
+        message.channel.send(`This is what YouTube found:\n${youtubeLink}`);
+      } catch (err) {
+        return message.channel.send(
+          `There was an error with that YouTube search, ${message.author}.\nError: ${err.message}`
+        );
+      }
+      break;
+    case 'link':
+      youtubeLink = string;
+      break;
+  }
+
+  server.dispatcher = connection.play(ytdl(youtubeLink), options);
   server.queue.shift();
   server.dispatcher.on('end', function () {
-    if (server.queue[0]) play(connection, message);
+    if (server.queue[0]) exports.play(connection, message);
     else connection.disconnect();
   });
-
-  if (regex.test(args[0])) {
-    // Is a URL
-    const link = args[0];
-
-    try {
-      await ytdl.getBasicInfo(link);
-
-      play(connection, message);
-    } catch (err) {
-      return message.channel.send(
-        `That video URL was not valid, ${message.author}! \nError: ${err.message}`
-      );
-    }
-  } else {
-    // Not a URL
-    const query = args.join(' ');
-    const baseURL = `https://www.googleapis.com/youtube/v3/search?`;
-    const params = [
-      `part=snippet`,
-      `q=${query}`,
-      `key=${youtubeApiKey}`,
-      `maxResults=1`,
-      `type=video`,
-    ];
-    const url = `${baseURL}${params.join('&')}`;
-
-    message.channel.send(`Searching YouTube for "${query}"...`);
-
-    try {
-      const res = await axios.get(url);
-      const videoId = res.data.items[0].id.videoId;
-      const youtubeLink = `https://www.youtube.com/watch?v=${videoId}`;
-
-      await ytdl.validateID(videoId);
-
-      message.channel.send(`This is what YouTube found:\n${youtubeLink}`);
-
-      play(connection, message);
-    } catch (err) {
-      return message.channel.send(
-        `There was an error with that YouTube search, ${message.author}.\nError: ${err.message}`
-      );
-    }
-  }
 };
