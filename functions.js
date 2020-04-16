@@ -41,6 +41,13 @@ exports.addToQueue = function (message, args) {
   console.log(`Added to queue. New queue: ${server.queue}`);
 };
 
+exports.getQueue = function (message) {
+  let server = servers[message.guild.id];
+
+  if (!server) return false;
+  else return server.queue;
+};
+
 exports.play = async function (connection, message, query) {
   let server = getServerObj(message.guild.id);
   const options = {
