@@ -1,25 +1,22 @@
-const { checkForServer, addServer, addToQueue, play } = require('../functions');
+const {
+  checkForServer,
+  addServer,
+  addToQueue,
+  play,
+  getQueue,
+} = require('../functions');
 
 module.exports = {
   name: 'play',
-  aliases: ['add'],
+  aliases: ['go', 'start'],
   description: 'Link a YouTube video to play.',
   guildOnly: true,
   voiceConnected: true,
-  args: true,
   async execute(message, args) {
-    if (!checkForServer(message.guild.id)) {
-      addServer(message.guild.id);
-    }
+    if (!checkForServer(message.guild.id) || getQueue(message).length < 1)
+      return message.reply(`you need to add something to the queue!`);
 
-    console.log(message.guild.voice);
-
-    // TODO: Need to check if already in a channel
-
-    await addToQueue(message, args);
-    if (!message.guild.voice) {
-      const connection = await message.member.voice.channel.join();
-      play(connection, message);
-    }
+    const connection = await message.member.voice.channel.join();
+    await play(connection, message);
   },
 };

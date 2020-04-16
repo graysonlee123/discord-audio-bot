@@ -44,10 +44,9 @@ exports.parseArgsToUrl = async function (message, args) {
     try {
       const res = await axios.get(`${baseURL}${params.join('&')}`);
       const videoId = res.data.items[0].id.videoId;
+      const youtubeLink = `https://www.youtube.com/watch?v=${videoId}`;
 
       await ytdl.validateID(videoId);
-
-      const youtubeLink = `https://www.youtube.com/watch?v=${videoId}`;
 
       message.channel.send(`This is what YouTube found:\n${youtubeLink}`);
 
@@ -64,7 +63,7 @@ exports.addToQueue = async function (message, args) {
   let server = servers[message.guild.id];
   let url = await exports.parseArgsToUrl(message, args);
 
-  console.log(`Adding ${url} to queue...`);
+  console.log(`Adding "${url}" to queue...`);
 
   server.queue.push(url);
 
@@ -72,6 +71,8 @@ exports.addToQueue = async function (message, args) {
 };
 
 exports.getQueue = function (message) {
+  if (!message)
+    return console.error('getQueue() needs to be passed the message!');
   let server = servers[message.guild.id];
 
   if (!server) return false;
@@ -88,11 +89,12 @@ exports.play = function (connection, message) {
   console.log(`Attempting to play from queue...`, server.queue);
 
   server.dispatcher = connection.play(ytdl(server.queue[0]), options);
+
   server.queue.shift();
-  server.dispatcher.on('end', function () {
+
+  server.dispatcher.on('finish', function () {
+    console.log('Next in queue...');
     if (server.queue[0]) exports.play(connection, message);
-    else {
-      connection.disconnect();
-    }
+    else connection.disconnect();
   });
 };
