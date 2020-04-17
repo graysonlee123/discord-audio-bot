@@ -5,6 +5,7 @@ const {
   checkForServer,
   addServer,
 } = require('../functions');
+const { client } = require('../index');
 
 module.exports = {
   name: 'queue',

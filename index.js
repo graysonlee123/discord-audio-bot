@@ -1,9 +1,22 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 const { prefix, token } = require('./config.json');
+const { format, loggers, transports } = require('winston');
 
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
+
+loggers.add('main', {
+  transports: [
+    new transports.Console(),
+    new transports.File({ filename: 'log' }),
+  ],
+  format: format.printf(
+    (log) => `[${log.level.toUpperCase()}] - ${log.message}`
+  ),
+});
+
+const logger = loggers.get('main');
 
 const commandFiles = fs
   .readdirSync('./commands')
@@ -17,7 +30,7 @@ for (const file of commandFiles) {
 const cooldowns = new Discord.Collection();
 
 client.once('ready', () => {
-  console.log('Ready and online!');
+  logger.log('info', 'Ready and online!');
 });
 
 client.on('message', (message) => {
@@ -81,13 +94,15 @@ client.on('message', (message) => {
   try {
     command.execute(message, args);
   } catch (error) {
-    console.error(error);
+    logger.log('error', error);
     message.reply('there was an error trying to execute that command!');
   }
 });
 
 process.on('unhandledRejection', (error) => {
-  console.error('Unhandled promise rejection:', error);
+  logger.log('error', error);
 });
 
 client.login(token);
+
+module.exports = client;

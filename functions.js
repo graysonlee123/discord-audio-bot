@@ -1,6 +1,10 @@
 const ytdl = require('ytdl-core');
 const axios = require('axios');
 const { youtubeApiKey } = require('./config.json');
+const { loggers } = require('winston');
+const { client } = require('./index');
+
+const logger = loggers.get('main');
 
 // Server Logic for Queues
 const servers = {};
@@ -63,11 +67,17 @@ exports.addToQueue = async function (message, args) {
   let server = servers[message.guild.id];
   let url = await exports.parseArgsToUrl(message, args);
 
-  console.log(`Adding "${url}" to queue...`);
+  logger.log('info', `Adding "${url}" to queue...`);
 
   server.queue.push(url);
 
-  console.log(`New queue:`, server.queue);
+  if (server.queue.length === 1) {
+    logger.log('info', 'First song in queue, play now');
+
+    message.client.commands.get('play').execute(message, args);
+  }
+
+  logger.log('info', `New queue:`, server.queue);
 };
 
 exports.getQueue = function (message) {
@@ -81,19 +91,14 @@ exports.getQueue = function (message) {
 
 exports.play = function (connection, message) {
   const server = exports.getServerObj(message.guild.id);
-  const options = {
-    quality: 'highestaudio',
-    filter: 'audioonly',
-  };
 
-  console.log(`Attempting to play from queue...`, server.queue);
-
-  server.dispatcher = connection.play(ytdl(server.queue[0]), options);
-
-  server.queue.shift();
+  server.dispatcher = connection.play(
+    ytdl(server.queue[0], { quality: 'highestaudio', filter: 'audioonly' }),
+    { volume: 0.4, highWaterMark: 1 << 25 }
+  );
 
   server.dispatcher.on('finish', function () {
-    console.log('Next in queue...');
+    server.queue.shift();
     if (server.queue[0]) exports.play(connection, message);
     else connection.disconnect();
   });
