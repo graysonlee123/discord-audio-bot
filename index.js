@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 const { prefix, token } = require('./config.json');
 const fs = require('fs');
+const path = require('path');
 
 const chalk = require('chalk');
 const error = chalk.bold.red;
@@ -20,7 +21,7 @@ exports.queue = queue;
 // Returns an array of each file name, and requires each command
 
 const commandFiles = fs
-  .readdirSync('./commands')
+  .readdirSync(path.join(__dirname, 'commands'))
   .filter((file) => file.endsWith('.js'));
 
 commandFiles.forEach((file) => {
