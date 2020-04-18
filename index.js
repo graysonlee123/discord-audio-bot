@@ -14,6 +14,9 @@ const client = new Discord.Client();
 // @documentation   https://discord.js.org/#/docs/collection/master/class/Collection
 client.commands = new Discord.Collection();
 
+const queue = new Map();
+exports.queue = queue;
+
 // Returns an array of each file name, and requires each command
 const commandFiles = fs
   .readdirSync('./commands')
@@ -23,8 +26,6 @@ commandFiles.forEach((file) => {
   const command = require(`./commands/${file}`);
   client.commands.set(command.name, command);
 });
-
-const queue = new Map();
 
 client.once('ready', () => {
   console.log(good('Online and Logged In!'));
@@ -47,7 +48,8 @@ client.on('message', async (message) => {
   const command =
     client.commands.get(commandName) ||
     client.commands.find(
-      (commandObj) => commandObj.aliases && cmd.aliases.includes(commandName)
+      (commandObj) =>
+        commandObj.aliases && commandObj.aliases.includes(commandName)
     );
 
   if (!command) return;
@@ -159,33 +161,35 @@ function stop(message, serverQueue) {
   serverQueue.connection.dispatcher.end();
 }
 
-function play(guild, song) {
-  const serverQueue = queue.get(guild.id);
+// function play(guild, song) {
+//   const serverQueue = queue.get(guild.id);
 
-  if (!song) {
-    serverQueue.voiceChannel.leave();
-    queue.delete(guild.id);
-    return;
-  }
+//   if (!song) {
+//     serverQueue.voiceChannel.leave();
+//     queue.delete(guild.id);
+//     return;
+//   }
 
-  const dispatcher = serverQueue.connection
-    .play(ytdl(song.url))
-    .on('finish', () => {
-      serverQueue.songs.shift();
-      play(guild, serverQueue.songs[0]);
-    })
-    .on('error', (err) => console.log(error('Error with dispatcher:', err)));
+//   const dispatcher = serverQueue.connection
+//     .play(ytdl(song.url))
+//     .on('finish', () => {
+//       serverQueue.songs.shift();
+//       play(guild, serverQueue.songs[0]);
+//     })
+//     .on('error', (err) => console.log(error('Error with dispatcher:', err)));
 
-  dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
-  serverQueue.textChannel.send(`Start playing: **${song.title}**`);
-}
+//   dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
+//   serverQueue.textChannel.send(`Start playing: **${song.title}**`);
+// }
 
 process.on('uncaughtException', (err) => {
-  console.log(error('Uncaugh excepction:', err));
+  console.log(error('Uncaught excepction:'));
+  console.error(err);
 });
 
 process.on('unhandledRejection', (err) => {
-  console.log(error('Uncaugh excepction:', err));
+  console.log(error('Unhandled Rejection:'));
+  console.error(err);
 });
 
 client.login(token);
