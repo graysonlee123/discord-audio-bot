@@ -1,16 +1,13 @@
 const { queue } = require('../index');
 
 module.exports = {
-  name: 'skip',
-  aliases: ['next'],
-  description: 'Skip to the next song in the queue.',
+  name: 'stop',
+  aliases: ['end'],
+  description: 'Remove the queue and disconnect me from the voice chat.',
   async execute(message, args) {
     const serverQueue = queue.get(message.guild.id);
 
-    if (!serverQueue) {
-      return message.channel.send(`There is no song that I could skip!`);
-    }
-
+    serverQueue.songs = [];
     serverQueue.connection.dispatcher.end();
   },
 };

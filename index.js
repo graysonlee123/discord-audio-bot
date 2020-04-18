@@ -10,8 +10,9 @@ const good = chalk.bgGreenBright.black;
 
 const client = new Discord.Client();
 
-// @details         Make a new colleciton, a map with extended functionality
-// @documentation   https://discord.js.org/#/docs/collection/master/class/Collection
+// ? @details         Make a new colleciton, a map with extended functionality
+// ? @documentation   https://discord.js.org/#/docs/collection/master/class/Collection
+
 client.commands = new Discord.Collection();
 
 const queue = new Map();
@@ -60,7 +61,8 @@ client.on('message', async (message) => {
     );
   }
 
-  // Remember that I ran args.shift()
+  // ! Remember that I ran args.shift()
+
   if (command.args && !args.length) {
     let reply = `You didn't provide any arguments, ${message.author}!`;
 
@@ -72,6 +74,7 @@ client.on('message', async (message) => {
   }
 
   // * Try to execute the command
+
   try {
     command.execute(message, args);
   } catch (err) {
@@ -83,38 +86,6 @@ client.on('message', async (message) => {
     );
   }
 });
-
-function stop(message, serverQueue) {
-  if (!message.member.voice.channel) {
-    return message.channel.send(
-      `You have to be in a voice channel to stop the music!`
-    );
-  }
-
-  serverQueue.songs = [];
-  serverQueue.connection.dispatcher.end();
-}
-
-// function play(guild, song) {
-//   const serverQueue = queue.get(guild.id);
-
-//   if (!song) {
-//     serverQueue.voiceChannel.leave();
-//     queue.delete(guild.id);
-//     return;
-//   }
-
-//   const dispatcher = serverQueue.connection
-//     .play(ytdl(song.url))
-//     .on('finish', () => {
-//       serverQueue.songs.shift();
-//       play(guild, serverQueue.songs[0]);
-//     })
-//     .on('error', (err) => console.log(error('Error with dispatcher:', err)));
-
-//   dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
-//   serverQueue.textChannel.send(`Start playing: **${song.title}**`);
-// }
 
 process.on('uncaughtException', (err) => {
   console.log(error('Uncaught excepction:'));
