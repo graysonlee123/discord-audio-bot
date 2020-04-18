@@ -26,7 +26,7 @@ function play(guild, song) {
     .on('error', (err) => console.log(error('Error with dispatcher:', err)));
 
   dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
-  serverQueue.textChannel.send(`Start playing: **${song.title}**`);
+  serverQueue.textChannel.send(`Now playing: **${song.title}**`);
 }
 
 async function getYouTubeURL(message, args) {
