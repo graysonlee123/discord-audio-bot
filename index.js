@@ -68,7 +68,7 @@ client.on('message', async (message) => {
 
   // * Try to execute the command
 
-  const serverQueue = queue.get(message.guild.id);
+  const serverQueue = message.guild && queue.get(message.guild.id);
 
   try {
     command.execute(message, args, serverQueue);

@@ -11,7 +11,7 @@ module.exports = {
 
     if (!args.length) {
       data.push("Here's the list of all my commands:");
-      data.push(commands.map((command) => command.name).join(', '));
+      data.push(commands.map((command) => `\`${command.name}\``).join('  '));
       data.push(
         `\nYou can send \`${prefix}help [command name]\` to get info on a specific command.`
       );
@@ -49,9 +49,7 @@ module.exports = {
     if (command.description)
       data.push(`**Description:** ${command.description}`);
     if (command.usage)
-      data.push(`**Usage:** ${prefix}${command.name} ${command.usage}`);
-
-    data.push(`**Cooldown:** ${command.cooldown || 3} second(s).`);
+      data.push(`**Usage:** \`${prefix}${command.name} ${command.usage}\``);
 
     message.channel.send(data, { split: true });
   },
