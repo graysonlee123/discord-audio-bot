@@ -19,6 +19,7 @@ const queue = new Map();
 exports.queue = queue;
 
 // Returns an array of each file name, and requires each command
+
 const commandFiles = fs
   .readdirSync('./commands')
   .filter((file) => file.endsWith('.js'));
@@ -75,6 +76,7 @@ client.on('message', async (message) => {
     console.log(
       error(`There was an error executing the command ${command.name}`)
     );
+    console.error(err);
     message.reply(
       `there was an error trying to execute that command! Go yell at Grayson.`
     );

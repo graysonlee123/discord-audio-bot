@@ -91,6 +91,8 @@ module.exports = {
 
     const song = await getYouTubeURL(message, args);
 
+    if (!song.title || !song.url) return;
+
     if (!serverQueue) {
       const queueConstruct = {
         textChannel: message.channel,
