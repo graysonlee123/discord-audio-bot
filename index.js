@@ -1,9 +1,9 @@
 const Discord = require('discord.js');
 const { prefix, token } = require('./config.json');
 const ytdl = require('ytdl-core');
-const chalk = require('chalk');
 const fs = require('fs');
 
+const chalk = require('chalk');
 const error = chalk.bold.red;
 const warning = chalk.keyword('orange');
 const good = chalk.bgGreenBright.black;
@@ -47,6 +47,10 @@ client.on('message', async (message) => {
     return message.reply(
       `Don't try to slide into my DM's. (That command is guild only.)`
     );
+  }
+
+  if (command.voiceConnected && !message.member.voice.channel) {
+    return message.reply(`you must be in a voice channel to run that command!`);
   }
 
   // ! Remember that I ran args.shift()
