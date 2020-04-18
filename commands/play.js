@@ -1,5 +1,5 @@
-const { queue } = require('../index');
 const ytdl = require('ytdl-core');
+const { queue } = require('../index');
 
 function play(guild, song) {
   const serverQueue = queue.get(guild.id);
@@ -27,9 +27,8 @@ module.exports = {
   description: "Play a YouTube video's audio.",
   args: true,
   usage: '<query || YouTube link>',
-  async execute(message, args) {
+  async execute(message, args, serverQueue) {
     const voiceChannel = message.member.voice.channel;
-    const serverQueue = queue.get(message.guild.id);
 
     const permissions = voiceChannel.permissionsFor(message.client.user);
     if (!permissions.has('CONNECT') || !permissions.has('SPEAK')) {
@@ -63,7 +62,6 @@ module.exports = {
 
         play(message.guild, queueConstruct.songs[0]);
       } catch (err) {
-        console.log(error('Error trying to play song:', err));
         queue.delete(message.guild.id);
         return message.channel.send(err);
       }

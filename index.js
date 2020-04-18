@@ -28,18 +28,6 @@ commandFiles.forEach((file) => {
   client.commands.set(command.name, command);
 });
 
-client.once('ready', () => {
-  console.log(good('Online and Logged In!'));
-});
-
-client.once('reconnecting', () => {
-  console.log(warning('Reconnecting'));
-});
-
-client.once('disconnect', () => {
-  console.log(warning('Disconnect'));
-});
-
 client.on('message', async (message) => {
   if (!message.content.startsWith(prefix) || message.author.bot) return;
 
@@ -75,8 +63,10 @@ client.on('message', async (message) => {
 
   // * Try to execute the command
 
+  const serverQueue = queue.get(message.guild.id);
+
   try {
-    command.execute(message, args);
+    command.execute(message, args, serverQueue);
   } catch (err) {
     console.log(
       error(`There was an error executing the command ${command.name}`)
@@ -85,6 +75,20 @@ client.on('message', async (message) => {
       `there was an error trying to execute that command! Go yell at Grayson.`
     );
   }
+});
+
+// Logs
+
+client.once('ready', () => {
+  console.log(good('Online and Logged In!'));
+});
+
+client.once('reconnecting', () => {
+  console.log(warning('Reconnecting'));
+});
+
+client.once('disconnect', () => {
+  console.log(warning('Disconnect'));
 });
 
 process.on('uncaughtException', (err) => {
