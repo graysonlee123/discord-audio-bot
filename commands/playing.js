@@ -1,4 +1,4 @@
-const ytdl = require('ytdl-core');
+const ytdl = require('ytdl-core-discord');
 const { MessageEmbed } = require('discord.js');
 
 function truncateString(str, num) {

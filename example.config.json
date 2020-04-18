@@ -1,5 +1,5 @@
 {
   "token": "your-token-here",
   "prefix": "!",
-  "youtubeApiKey": "your-api-key"
+  "youtubeApiKey": "your-youtube-api-key"
 }

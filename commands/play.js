@@ -1,14 +1,12 @@
-const ytdl = require('ytdl-core');
-const { queue } = require('../index');
+const ytdl = require('ytdl-core-discord');
 const axios = require('axios');
+const { queue } = require('../index');
 const { youtubeApiKey } = require('../config.json');
 
 const chalk = require('chalk');
 const error = chalk.bold.red;
-const warning = chalk.keyword('orange');
-const good = chalk.bgGreenBright.black;
 
-function play(guild, song) {
+async function play(guild, song) {
   const serverQueue = queue.get(guild.id);
 
   if (!song) {
@@ -18,7 +16,7 @@ function play(guild, song) {
   }
 
   const dispatcher = serverQueue.connection
-    .play(ytdl(song.url))
+    .play(await ytdl(song.url), { type: 'opus' })
     .on('finish', () => {
       serverQueue.songs.shift();
       play(guild, serverQueue.songs[0]);
@@ -79,7 +77,7 @@ module.exports = {
   args: true,
   guildOnly: true,
   voiceConnected: true,
-  usage: '<query || YouTube link>',
+  usage: '<link_or_search_term>',
   async execute(message, args, serverQueue) {
     const voiceChannel = message.member.voice.channel;
 
@@ -111,10 +109,10 @@ module.exports = {
         const connection = await voiceChannel.join();
         queueConstruct.connection = connection;
 
-        play(message.guild, queueConstruct.songs[0]);
+        await play(message.guild, queueConstruct.songs[0]);
       } catch (err) {
         queue.delete(message.guild.id);
-        return message.channel.send(err);
+        return message.channel.send(`Error: ${err}`);
       }
     } else {
       serverQueue.songs.push(song);

@@ -1,7 +1,7 @@
 module.exports = {
   name: 'remove',
   description: 'Remove a song from the queue.',
-  usage: '[index]',
+  usage: '<video_index>',
   args: true,
   voiceConnected: true,
   guildOnly: true,
