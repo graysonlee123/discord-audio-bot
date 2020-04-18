@@ -1,5 +1,6 @@
 {
   "token": "your-token-here",
   "prefix": "!",
-  "youtubeApiKey": "your-youtube-api-key"
+  "youtubeApiKey": "your-youtube-api-key",
+  "omdbApiKey": "your-omdb-api-key"
 }
