@@ -6,9 +6,7 @@ module.exports = {
   guildOnly: true,
   voiceConnected: true,
   description: 'Remove the queue and disconnect me from the voice chat.',
-  async execute(message, args) {
-    const serverQueue = queue.get(message.guild.id);
-
+  async execute(message, args, serverQueue) {
     serverQueue.songs = [];
     serverQueue.connection.dispatcher.end();
   },
