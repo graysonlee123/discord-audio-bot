@@ -15,3 +15,5 @@ See the file `.example.config.json`.
 - All GUILD methods and properties: [https://discord.js.org/#/docs/main/stable/class/Guild]
 - All USER methods and properties: [https://discord.js.org/#/docs/main/stable/class/User]
 - Google API: [https://developers.google.com/youtube/v3/docs/search/list]
+
+`npm install --unsafe-perm=true --allow-root`

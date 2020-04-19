@@ -15,10 +15,10 @@ async function play(guild, song) {
     return;
   }
 
+  await ytdl.getInfo(song.url);
+
   const dispatcher = serverQueue.connection
-    .play(
-      await ytdl(song.url, { filter: 'audioonly', quality: 'highestaudio' })
-    )
+    .play(ytdl(song.url, { filter: 'audioonly', quality: 'highestaudio' }))
     .on('finish', () => {
       serverQueue.songs.shift();
       play(guild, serverQueue.songs[0]);
