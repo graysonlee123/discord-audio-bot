@@ -1,4 +1,4 @@
-const ytdl = require('ytdl-core-discord');
+const ytdl = require('ytdl-core');
 const axios = require('axios');
 const { queue } = require('../index');
 const { youtubeApiKey } = require('../config.json');
@@ -16,12 +16,18 @@ async function play(guild, song) {
   }
 
   const dispatcher = serverQueue.connection
-    .play(await ytdl(song.url), { type: 'opus' })
+    .play(
+      await ytdl(song.url, { filter: 'audioonly', quality: 'highestaudio' })
+    )
     .on('finish', () => {
       serverQueue.songs.shift();
       play(guild, serverQueue.songs[0]);
     })
-    .on('error', (err) => console.log(error('Error with dispatcher:', err)));
+    .on('error', (err) => {
+      (err) => console.log(error('Error with dispatcher:', err));
+      serverQueue.songs.shift();
+      play(guild, serverQueue.songs[0]);
+    });
 
   dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
   serverQueue.textChannel.send(`Now playing: **${song.title}**`);
