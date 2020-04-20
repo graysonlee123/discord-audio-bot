@@ -3,5 +3,5 @@
   "prefix": "!",
   "youtubeApiKey": "your-youtube-api-key",
   "omdbApiKey": "your-omdb-api-key",
-  "jokeApi": "your-joke-api-key"
+  "rapidApiKey": "your-joke-api-key"
 }
