@@ -32,11 +32,11 @@ module.exports = {
       .setDescription(`**${title}**`)
       .setThumbnail(author.avatar)
       .addFields([
-        { name: 'Author', value: author.name },
-        { name: 'Likes', value: likes, inline: true },
-        { name: 'Length', value: length_seconds, inline: true },
-        { name: 'Link', value: video_url },
-        { name: 'Description', value: truncateString(description, 400) },
+        { name: 'Author', value: author.name || 'N/A' },
+        { name: 'Likes', value: likes || 'N/A', inline: true },
+        { name: 'Length', value: length_seconds || 'N/A', inline: true },
+        { name: 'Link', value: video_url || 'N/A' },
+        { name: 'Description', value: truncateString(description, 400) || 'N/A' },
       ]);
 
     message.channel.send(embed);
