@@ -1,26 +1,32 @@
-const axios = require('axios');
-const { rapidApiKey } = require('../config.json');
+const axios = require("axios");
 
 module.exports = {
-  name: 'joke',
-  description: 'Get a random joke from Joke API by LemmoTresto.',
-  aliases: ['funny', 'laugh'],
+  name: "joke",
+  description: "Get a random joke from Joke API by Sven Fehler.",
+  aliases: ["funny", "laugh"],
   async execute(message, args) {
-    const joke = await axios({
-      url: 'https://joke3.p.rapidapi.com/v1/joke',
-      headers: {
-        'x-rapidapi-key': rapidApiKey,
-      },
-    });
+    try {
+      const res = await axios({
+        url: "https://sv443.net/jokeapi/v2/joke/any?type=single",
+      });
 
-    if (!joke.data) {
-      message.channel.send(
-        `I couldn't find a joke! Please report this to Grayson.`
-      );
+      const { category, type, flags, id, error } = res.data;
 
-      console.log(res);
+      if (type === "twopart") {
+        const { setup, delivery } = res.data;
+        message.channel.send(setup);
+
+        setTimeout(() => {
+          message.channel.send(delivery);
+        }, 1500);
+      } else {
+        const { joke } = res.data;
+        message.channel.send(joke);
+      }
+
+      console.log(res.data);
+    } catch (err) {
+      return;
     }
-
-    message.channel.send(joke.data.content);
   },
 };
