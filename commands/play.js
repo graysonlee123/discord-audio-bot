@@ -112,7 +112,7 @@ module.exports = {
   args: true,
   guildOnly: true,
   voiceConnected: true,
-  usage: "<link_or_search_term>",
+  usage: 'query',
   async execute(message, args, serverQueue) {
     const voiceChannel = message.member.voice.channel;
 

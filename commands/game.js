@@ -5,7 +5,7 @@ const { MessageEmbed } = require('discord.js');
 module.exports = {
   name: 'game',
   description: 'Look up a game.',
-  usage: '"<game name>" [platform]',
+  usage: 'game_name [platform]',
   async execute(message, args) {
     const regex = new RegExp(/"(.+)"\s?(.*)?/);
     const game = regex.exec(args.join(' '));

@@ -4,7 +4,7 @@ module.exports = {
   name: "joke",
   description:
     'Get a random joke from Joke API by Sven Fehler. Joke categories include "programming", "misc", and "dark"',
-  usage: "[category]",
+  usage: '[category]',
   async execute(message, args) {
     let category;
 
@@ -52,7 +52,7 @@ module.exports = {
         message.channel.send(joke);
       }
     } catch (err) {
-      return message.reply(`there was an error running that command!`)
+      return message.reply(`there was an error running that command!`);
     }
   },
 };

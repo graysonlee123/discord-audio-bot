@@ -12,7 +12,7 @@ module.exports = {
   name: 'movie',
   aliases: ['film'],
   description: 'Get information about a movie.',
-  usage: '<movie_name>',
+  usage: 'movie_name',
   args: true,
   async execute(message, args) {
     const search = args.join(' ');
