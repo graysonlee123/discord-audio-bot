@@ -1,9 +1,9 @@
-const ytdl = require('ytdl-core');
-const axios = require('axios');
-const { queue } = require('../index');
-const { youtubeApiKey } = require('../config.json');
+const ytdl = require("ytdl-core");
+const axios = require("axios");
+const { queue } = require("../index");
+const { youtubeApiKey } = require("../config.json");
 
-const chalk = require('chalk');
+const chalk = require("chalk");
 const error = chalk.bold.red;
 
 async function play(guild, song) {
@@ -15,39 +15,35 @@ async function play(guild, song) {
     return;
   }
 
-  await ytdl.getInfo(song.url);
+  await ytdl.getInfo(song.video_url);
 
   const dispatcher = serverQueue.connection
-    .play(ytdl(song.url, { filter: 'audioonly', quality: 'highestaudio' }))
-    .on('finish', () => {
+    .play(
+      ytdl(song.video_url, { filter: "audioonly", quality: "highestaudio" })
+    )
+    .on("finish", () => {
       serverQueue.songs.shift();
       play(guild, serverQueue.songs[0]);
     })
-    .on('error', (err) => {
-      (err) => console.log(error('Error with dispatcher:', err));
+    .on("error", (err) => {
+      console.log(error("Error with dispatcher:", err));
       serverQueue.songs.shift();
       play(guild, serverQueue.songs[0]);
     });
 
   dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
-  serverQueue.textChannel.send(`Now playing: **${song.title}**`);
+  serverQueue.textChannel.send(`Now playing: **${song.title}** by ${song.authorName}`);
 }
 
 async function getYouTubeURL(message, args) {
-  const regex = RegExp('^(http||https)://.+');
-  const song = {
-    title: null,
-    url: null,
-  };
+  const regex = RegExp("^(http||https)://.+");
+  let songInfo = null;
 
   if (regex.test(args[0])) {
-    const { title, video_url } = await ytdl.getInfo(args[0]);
-
-    song.title = title;
-    song.url = video_url;
+    songInfo = await ytdl.getInfo(args[0]);
   } else {
     const baseURL = `https://www.googleapis.com/youtube/v3/search?`;
-    const query = args.join(' ');
+    const query = args.join(" ");
     const params = [
       `part=snippet`,
       `q=${query}`,
@@ -59,13 +55,10 @@ async function getYouTubeURL(message, args) {
     message.channel.send(`Searching YouTube API for **${query}**`);
 
     try {
-      const res = await axios.get(`${baseURL}${params.join('&')}`);
-
+      const res = await axios.get(`${baseURL}${params.join("&")}`);
       const youTubeLink = `https://youtube.com/watch?v=${res.data.items[0].id.videoId}`;
-      const { title, video_url } = await ytdl.getInfo(youTubeLink);
 
-      song.title = title;
-      song.url = video_url;
+      songInfo = await ytdl.getInfo(youTubeLink);
     } catch (err) {
       message.channel.send(
         `There was an error with that YouTube search! Try a different search.`
@@ -73,29 +66,68 @@ async function getYouTubeURL(message, args) {
     }
   }
 
-  return song;
+  const {
+    title,
+    video_url,
+    likes,
+    dislikes,
+    published,
+    description,
+    author: {
+      id: authorId,
+      name: authorName,
+      avatar: authorAvatar,
+      user,
+      channel_url,
+      user_url,
+      subscriber_count
+    },
+    media: {
+      category
+    }
+  } = songInfo;
+
+  return {
+    title,
+    video_url,
+    likes,
+    dislikes,
+    published,
+    description,
+    authorId,
+    authorName,
+    authorAvatar,
+    user,
+    channel_url,
+    user_url,
+    subscriber_count,
+    category,
+  };
 }
 
 module.exports = {
-  name: 'play',
+  name: "play",
   description:
     "Play a YouTube video's audio, or search for something on YouTube.",
   args: true,
   guildOnly: true,
   voiceConnected: true,
-  usage: '<link_or_search_term>',
+  usage: "<link_or_search_term>",
   async execute(message, args, serverQueue) {
     const voiceChannel = message.member.voice.channel;
 
     const permissions = voiceChannel.permissionsFor(message.client.user);
-    if (!permissions.has('CONNECT') || !permissions.has('SPEAK')) {
+    if (!permissions.has("CONNECT") || !permissions.has("SPEAK")) {
       return message.channel.send(`
         You must grand me permissions to join and speak in your voice channel!`);
     }
 
     const song = await getYouTubeURL(message, args);
 
-    if (!song.title || !song.url) return;
+    console.log("Song:", song);
+
+    if (!song.title || !song.video_url)
+      return message.reply(`couldn't find that in YouTube!`);
 
     if (!serverQueue) {
       const queueConstruct = {
@@ -108,7 +140,6 @@ module.exports = {
       };
 
       queue.set(message.guild.id, queueConstruct);
-
       queueConstruct.songs.push(song);
 
       try {
