@@ -11,9 +11,9 @@ module.exports = {
       return message.reply('there seems to be no queue!');
     }
 
-    const embedFields = serverQueue.songs.map(({ title, url }, i) => ({
-      name: `${url}`,
-      value: `**${i + 1}.** ${title}`,
+    const embedFields = serverQueue.songs.map(({ title, video_url, authorName }, i) => ({
+      name: `${video_url}`,
+      value: `**${i + 1}.** ${title}\nby ${authorName}`,
     }));
 
     message.channel.send(
