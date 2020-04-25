@@ -66,8 +66,6 @@ async function getYouTubeURL(message, args) {
     }
   }
 
-  console.log(songInfo);
-
   const {
     title,
     video_url,
