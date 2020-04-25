@@ -66,6 +66,8 @@ async function getYouTubeURL(message, args) {
     }
   }
 
+  console.log(songInfo);
+
   const {
     title,
     video_url,
@@ -73,6 +75,7 @@ async function getYouTubeURL(message, args) {
     dislikes,
     published,
     description,
+    length_seconds,
     author: {
       id: authorId,
       name: authorName,
@@ -94,6 +97,7 @@ async function getYouTubeURL(message, args) {
     dislikes,
     published,
     description,
+    length_seconds,
     authorId,
     authorName,
     authorAvatar,
@@ -101,8 +105,8 @@ async function getYouTubeURL(message, args) {
     channel_url,
     user_url,
     subscriber_count,
-    category,
-  };
+    category
+  }
 }
 
 module.exports = {
