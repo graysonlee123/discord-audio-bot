@@ -124,8 +124,6 @@ module.exports = {
 
     const song = await getYouTubeURL(message, args);
 
-    console.log("Song:", song);
-
     if (!song.title || !song.video_url)
       return message.reply(`couldn't find that in YouTube!`);
 
