@@ -1,4 +1,4 @@
-const ytdl = require("ytdl-core");
+const ytdl = require("ytdl-core-discord");
 const axios = require("axios");
 const { queue } = require("../index");
 const { youtubeApiKey } = require("../config.json");
@@ -18,9 +18,7 @@ async function play(guild, song) {
   await ytdl.getInfo(song.video_url);
 
   const dispatcher = serverQueue.connection
-    .play(
-      ytdl(song.video_url, { filter: "audioonly", quality: "highestaudio" })
-    )
+    .play(await ytdl(song.video_url), { type: "opus" })
     .on("finish", () => {
       serverQueue.songs.shift();
       play(guild, serverQueue.songs[0]);
@@ -32,7 +30,9 @@ async function play(guild, song) {
     });
 
   dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
-  serverQueue.textChannel.send(`Now playing: **${song.title}** by ${song.authorName}`);
+  serverQueue.textChannel.send(
+    `Now playing: **${song.title}** by ${song.authorName}`
+  );
 }
 
 async function getYouTubeURL(message, args) {
@@ -81,11 +81,9 @@ async function getYouTubeURL(message, args) {
       user,
       channel_url,
       user_url,
-      subscriber_count
+      subscriber_count,
     },
-    media: {
-      category
-    }
+    media: { category },
   } = songInfo;
 
   return {
@@ -103,8 +101,8 @@ async function getYouTubeURL(message, args) {
     channel_url,
     user_url,
     subscriber_count,
-    category
-  }
+    category,
+  };
 }
 
 module.exports = {
@@ -114,7 +112,7 @@ module.exports = {
   args: true,
   guildOnly: true,
   voiceConnected: true,
-  usage: 'query',
+  usage: "query",
   async execute(message, args, serverQueue) {
     const voiceChannel = message.member.voice.channel;
 
