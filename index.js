@@ -98,8 +98,8 @@ client.once('disconnect', () => {
 });
 
 process.on('uncaughtException', (err) => {
-  console.log(error('Uncaught excepction:'));
-  console.error(err);
+  console.error('There was an uncaught error', err);
+  process.exit(1); // Mandatory; bot is in an undefined state
 });
 
 process.on('unhandledRejection', (err) => {

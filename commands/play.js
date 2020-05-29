@@ -3,13 +3,14 @@ const axios = require("axios");
 const { queue } = require("../index");
 const { youtubeApiKey } = require("../config.json");
 
-const chalk = require("chalk");
-const error = chalk.bold.red;
+// ytdl.getInfo('https://www.youtube.com/watch?v=aiRn3Zlw3Rw', (err, info) => {
+//   console.log(info);
+// })
 
 async function play(guild, song) {
   const serverQueue = queue.get(guild.id);
 
-  if (!song) {
+  if (!song || !song.video_url) {
     serverQueue.voiceChannel.leave();
     queue.delete(guild.id);
     return;
@@ -17,16 +18,22 @@ async function play(guild, song) {
 
   await ytdl.getInfo(song.video_url);
 
+  console.log(song.video_url, typeof song.video_url);
+
   const dispatcher = serverQueue.connection
-    .play(await ytdl(song.video_url), { type: "opus" })
+    .play(
+      await ytdl(song.video_url, {
+        filter: "audioonly"
+      }), { type: 'opus' }
+    )
     .on("finish", () => {
       serverQueue.songs.shift();
       play(guild, serverQueue.songs[0]);
     })
-    .on("error", (err) => {
-      console.log(error("Error with dispatcher:", err));
+    .on("error", err => {
       serverQueue.songs.shift();
       play(guild, serverQueue.songs[0]);
+      console.error('Error in playing a song:', err);
     });
 
   dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
@@ -42,20 +49,18 @@ async function getYouTubeURL(message, args) {
   if (regex.test(args[0])) {
     songInfo = await ytdl.getInfo(args[0]);
   } else {
-    const baseURL = `https://www.googleapis.com/youtube/v3/search?`;
-    const query = args.join(" ");
-    const params = [
-      `part=snippet`,
-      `q=${query}`,
-      `key=${youtubeApiKey}`,
-      `maxResults=1`,
-      `type=video`,
-    ];
+    const youtubeURL = new URL("https://www.googleapis.com/youtube/v3/search");
 
-    message.channel.send(`Searching YouTube API for **${query}**`);
+    youtubeURL.searchParams.append("part", "snippet");
+    youtubeURL.searchParams.append("q", args.join(" "));
+    youtubeURL.searchParams.append("key", youtubeApiKey);
+    youtubeURL.searchParams.append("maxResults", 1);
+    youtubeURL.searchParams.append("type", "video");
+
+    message.channel.send(`Searching YouTube API for **${args.join(" ")}**`);
 
     try {
-      const res = await axios.get(`${baseURL}${params.join("&")}`);
+      const res = await axios.get(youtubeURL.href);
       const youTubeLink = `https://youtube.com/watch?v=${res.data.items[0].id.videoId}`;
 
       songInfo = await ytdl.getInfo(youTubeLink);
@@ -81,9 +86,9 @@ async function getYouTubeURL(message, args) {
       user,
       channel_url,
       user_url,
-      subscriber_count,
+      subscriber_count
     },
-    media: { category },
+    media: { category }
   } = songInfo;
 
   return {
@@ -101,7 +106,7 @@ async function getYouTubeURL(message, args) {
     channel_url,
     user_url,
     subscriber_count,
-    category,
+    category
   };
 }
 
@@ -134,7 +139,7 @@ module.exports = {
         connection: null,
         songs: [],
         volume: 5,
-        playing: true,
+        playing: true
       };
 
       queue.set(message.guild.id, queueConstruct);
@@ -155,5 +160,5 @@ module.exports = {
         `**${song.title}** has been added to the queue!`
       );
     }
-  },
+  }
 };
